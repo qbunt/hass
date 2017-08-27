@@ -1,0 +1,131 @@
+homeassistant:
+  # Name of the location where Home Assistant is running
+  name: Home
+  # Location required to calculate the time the sun rises and sets
+  latitude: !secret home_lat
+  longitude: !secret home_long
+  # Impacts weather/sunrise data (altitude above sea level in meters)
+  elevation: 16
+  # metric for Metric, imperial for Imperial
+  unit_system: imperial
+  # Pick yours from here: http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+  time_zone: America/Los_Angeles
+
+# Show links to resources in log and frontend
+# introduction:
+
+# Enables the frontend
+frontend:
+
+# Enables configuration UI
+config:
+
+http:
+  # Uncomment this to add a password (recommended!)
+  api_password: !secret api_pass
+  # Uncomment this if you are using SSL/TLS, running in Docker container, etc.
+  # base_url: example.duckdns.org:8123
+
+# Checks for available updates
+# Note: This component will send some information about your system to
+# the developers to assist with development of Home Assistant.
+# For more information, please see:
+# https://home-assistant.io/blog/2016/10/25/explaining-the-updater/
+updater:
+  # Optional, allows Home Assistant developers to focus on popular components.
+  # include_used_components: true
+
+# Discover some devices automatically
+discovery:
+
+# Allows you to issue voice commands from the frontend in enabled browsers
+conversation:
+
+# Enables support for tracking state changes over time
+history:
+
+# View all events in a logbook
+logbook:
+
+# Track the sun
+sun:
+
+zone:
+  name: Work
+  latitude: !secret work_lat
+  longitude: !secret work_long
+  radius: 200
+  icon: mdi:domain
+
+zone 2:
+  name: Home
+  latitude: !secret home_lat
+  longitude: !secret home_long
+  radius: 50
+  icon: mdi:home
+
+zone 3:
+  name: Tom and Teri's
+  latitude: !secret teri_lat
+  longitude: !secret teri_long
+  radius: 50
+  icon: mdi:home
+
+sensor:
+  - platform: speedtest
+    minute: 30
+    hour:
+        - 2
+        - 5
+    monitored_conditions:
+      - ping
+      - download
+      - upload
+
+  - platform: pi_hole
+    host: !secret pi_hole_host
+    monitored_conditions:
+       - 'ads_blocked_today'
+       - 'ads_percentage_today'
+
+usps:
+    username: !secret usps_user
+    password: !secret usps_pass
+
+media_player:
+  - platform: kodi
+    host: !secret kodi_host
+    username: !secret kodi_user
+    password: !secret kodi_pass
+    turn_on_action:
+      service: media_player.kodi_call_method
+      data:
+        entity_id: media_player.kodi
+        method: Addons.ExecuteAddon
+        addonid: script.json-cec
+        params:
+          command: activate
+    turn_off_action:
+    - service: media_player.media_stop
+      data:
+        entity_id: media_player.kodi
+    - service: media_player.kodi_call_method
+      data:
+        entity_id: media_player.kodi
+        method: Addons.ExecuteAddon
+        addonid: script.json-cec
+        params:
+          command: standby
+
+notify:
+  - name: primary-notifier
+    platform: pushover
+    api_key: !secret pushover_api_key
+    user_key: !secret pushover_user_key
+
+# Text to speech
+tts:
+  - platform: google
+
+group: !include groups.yaml
+automation: !include automations.yaml
